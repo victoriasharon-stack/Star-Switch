@@ -1,20 +1,18 @@
 """
 Star Switch
-Tells you what's exactly in the sky above you right now — visible planets,
-moon phase, and constellations — and turns it into a short interactive
+Tells you what's exactly in the sky above you right now - visible planets,
+moon phase, and constellations - and turns it into a short interactive
 story drawn from sky mythology.
 """
 
 import ephem
 import datetime
 import os
-import json
-import urllib.request
+import requests
 
-# ---------- CONFIG ----------
-DEFAULT_LAT = "17.3850"   # Hyderabad
+DEFAULT_LAT = "17.3850"
 DEFAULT_LON = "78.4867"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")  # set this before running
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 PLANETS = {
@@ -28,7 +26,6 @@ PLANETS = {
 }
 
 
-# ---------- SKY ENGINE ----------
 def get_observer(lat=DEFAULT_LAT, lon=DEFAULT_LON, when=None):
     obs = ephem.Observer()
     obs.lat = lat
@@ -41,7 +38,7 @@ def visible_planets(obs):
     visible = []
     for name, body_cls in PLANETS.items():
         body = body_cls(obs)
-        if body.alt > 0:  # above horizon
+        if body.alt > 0:
             visible.append({
                 "name": name,
                 "altitude_deg": round(float(body.alt) * 180 / ephem.pi, 1),
@@ -54,9 +51,8 @@ def visible_planets(obs):
 
 def moon_info(obs):
     moon = ephem.Moon(obs)
-    phase_pct = moon.phase  # 0-100, illuminated %
+    phase_pct = moon.phase
 
-    # figure out phase name from the moon's age in the lunar cycle
     prev_new = ephem.previous_new_moon(obs.date)
     age_days = obs.date - prev_new
 
@@ -88,8 +84,6 @@ def moon_info(obs):
 
 
 def visible_constellation(obs, body_name="Moon"):
-    """Constellation the given body currently sits in (defaults to the Moon,
-    since it's usually the most recognizable reference point)."""
     body = ephem.Moon(obs) if body_name == "Moon" else PLANETS[body_name](obs)
     const_code, const_name = ephem.constellation(body)
     return const_name
@@ -106,7 +100,6 @@ def get_sky_snapshot(lat=DEFAULT_LAT, lon=DEFAULT_LON, when=None):
     }
 
 
-# ---------- STORY GENERATOR (Groq / LLaMA) ----------
 def generate_story(sky_data):
     if not GROQ_API_KEY:
         return _fallback_story(sky_data)
@@ -121,38 +114,35 @@ Sky data:
 
 Write it as a short second-person narrative ("You look up and see..."), evocative but grounded in the real astronomy. End with one open question inviting the reader to pick what to explore next."""
 
-    body = json.dumps({
-        "model": GROQ_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.8,
-        "max_tokens": 400,
-    }).encode()
-
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=body,
-        headers={
-            "Authorization": f"Bearer {GROQ_API_KEY}",
-            "Content-Type": "application/json",
-        },
-    )
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read())
-            return data["choices"][0]["message"]["content"]
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": GROQ_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.8,
+                "max_tokens": 400,
+            },
+            timeout=15,
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        print(f"[Groq call failed: {e} — using fallback story]")
+        print(f"[Groq call failed: {e} - using fallback story]")
         return _fallback_story(sky_data)
 
 
 def _fallback_story(sky_data):
-    """Used when no GROQ_API_KEY is set, so you can still test the app."""
     moon = sky_data["moon"]
     const = sky_data["moon_constellation"]
     planet_line = (
         f"Nearby, {', '.join(p['name'] for p in sky_data['planets'])} watch silently from the dark."
         if sky_data["planets"] else
-        "No planets keep it company tonight — the sky belongs to the Moon alone."
+        "No planets keep it company tonight - the sky belongs to the Moon alone."
     )
     return (
         f"You look up and find a {moon['phase_name']} hanging in the constellation of {const}, "
@@ -161,10 +151,9 @@ def _fallback_story(sky_data):
     )
 
 
-# ---------- MAIN ----------
 if __name__ == "__main__":
     print("=" * 50)
-    print("STAR SWITCH — what's in the sky right now")
+    print("STAR SWITCH - what's in the sky right now")
     print("=" * 50)
 
     sky = get_sky_snapshot()
@@ -175,7 +164,7 @@ if __name__ == "__main__":
     print("Visible planets:")
     if sky["planets"]:
         for p in sky["planets"]:
-            print(f"  - {p['name']}: {p['altitude_deg']}° up, mag {p['magnitude']}")
+            print(f"  - {p['name']}: {p['altitude_deg']} deg up, mag {p['magnitude']}")
     else:
         print("  None above the horizon right now.")
 
