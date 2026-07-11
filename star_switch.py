@@ -1,7 +1,7 @@
 """
 Star Switch
-Tells you what's exactly in the sky above you right now - visible planets,
-moon phase, and constellations - and turns it into a short interactive
+Tells you what's exactly in the sky above you right now — visible planets,
+moon phase, and constellations — and turns it into a short interactive
 story drawn from sky mythology.
 """
 
@@ -12,6 +12,14 @@ import requests
 import math
 import matplotlib.pyplot as plt
 import pyttsx3
+import asyncio
+import edge_tts
+import tempfile
+from playsound import playsound
+from colorama import init, Fore, Style
+import winsound
+
+init(autoreset=True)
 
 # ---------- CONFIG ----------
 DEFAULT_LAT = "17.3850"   # Hyderabad
@@ -43,7 +51,7 @@ def visible_planets(obs):
     visible = []
     for name, body_cls in PLANETS.items():
         body = body_cls(obs)
-        if body.alt > 0:
+        if body.alt > 0:  # above horizon
             visible.append({
                 "name": name,
                 "altitude_deg": round(float(body.alt) * 180 / ephem.pi, 1),
@@ -56,8 +64,9 @@ def visible_planets(obs):
 
 def moon_info(obs):
     moon = ephem.Moon(obs)
-    phase_pct = moon.phase
+    phase_pct = moon.phase  # 0-100, illuminated %
 
+    # figure out phase name from the moon's age in the lunar cycle
     prev_new = ephem.previous_new_moon(obs.date)
     age_days = obs.date - prev_new
 
@@ -90,6 +99,8 @@ def moon_info(obs):
 
 
 def visible_constellation(obs, body_name="Moon"):
+    """Constellation the given body currently sits in (defaults to the Moon,
+    since it's usually the most recognizable reference point)."""
     body = ephem.Moon(obs) if body_name == "Moon" else PLANETS[body_name](obs)
     const_code, const_name = ephem.constellation(body)
     return const_name
@@ -126,13 +137,13 @@ def generate_story(sky_data, culture="Greek"):
     else:
         moon_line = f"- Moon: currently BELOW the horizon, not visible right now (phase is {moon['phase_name']} if it were up)"
 
-    prompt = f"""You are a sky-mythology storyteller specializing in {culture} mythology. Based on tonight's real sky data, write a short (120-180 word) interactive story or vignette that draws specifically from {culture} mythology and tradition, tied to what's actually visible right now.
+    prompt = f"""You are a sky-mythology storyteller specializing in {culture} mythology. Based on tonight's real sky data, write a SHORT (70-100 word) interactive story or vignette that draws specifically from {culture} mythology and tradition, tied to what's actually visible right now. Keep it concise and punchy.
 
 Sky data:
 - Visible planets: {', '.join(planet_names) if planet_names else 'none currently above the horizon'}
 {moon_line}
 
-Important: only describe objects as visible if they are actually above the horizon per the data above. If the Moon is below the horizon, do not describe seeing it - you can still reference its mythological significance without claiming it's visible.
+Important: only describe objects as visible if they are actually above the horizon per the data above. If the Moon is below the horizon, do not describe seeing it — you can still reference its mythological significance without claiming it's visible.
 
 Write it as a short second-person narrative ("You look up and see..."), evocative but grounded in the real astronomy, drawing only from {culture} mythology and gods/figures. End with one open question inviting the reader to pick what to explore next."""
 
@@ -147,24 +158,25 @@ Write it as a short second-person narrative ("You look up and see..."), evocativ
                 "model": GROQ_MODEL,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.8,
-                "max_tokens": 400,
+                "max_tokens": 220,
             },
             timeout=15,
         )
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        print(f"[Groq call failed: {e} - using fallback story]")
+        print(f"[Groq call failed: {e} — using fallback story]")
         return _fallback_story(sky_data, culture)
 
 
 def _fallback_story(sky_data, culture="Greek"):
+    """Used when no GROQ_API_KEY is set, so you can still test the app."""
     moon = sky_data["moon"]
     const = sky_data["moon_constellation"]
     planet_line = (
         f"Nearby, {', '.join(p['name'] for p in sky_data['planets'])} watch silently from the dark."
         if sky_data["planets"] else
-        "No planets keep it company tonight - the sky belongs to the Moon alone."
+        "No planets keep it company tonight — the sky belongs to the Moon alone."
     )
     if moon["visible"]:
         moon_line = (
@@ -173,7 +185,7 @@ def _fallback_story(sky_data, culture="Greek"):
         )
     else:
         moon_line = (
-            f"[{culture} mode] The Moon has slipped below the horizon for now - "
+            f"[{culture} mode] The Moon has slipped below the horizon for now — "
             f"it's a {moon['phase_name']} tonight, waiting for its turn to rise. "
         )
     return (
@@ -184,14 +196,20 @@ def _fallback_story(sky_data, culture="Greek"):
 
 # ---------- VISUAL SKY MAP ----------
 def draw_sky_map(sky_data, save_path="sky_map.png"):
+    """Draws a polar sky dome: center = straight overhead (zenith),
+    edge = horizon. Plots visible planets and the Moon at their real
+    altitude/azimuth positions."""
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection="polar")
 
+    # Azimuth 0 = North, goes clockwise like a compass
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
+
+    # radius = 90 - altitude, so zenith (alt=90) is center, horizon (alt=0) is edge
     ax.set_ylim(0, 90)
     ax.set_yticks([0, 30, 60, 90])
-    ax.set_yticklabels(["90", "60", "30", "Horizon"], fontsize=7)
+    ax.set_yticklabels(["90°", "60°", "30°", "Horizon"], fontsize=7)
     ax.set_xticks([0, math.pi/2, math.pi, 3*math.pi/2])
     ax.set_xticklabels(["N", "E", "S", "W"], fontsize=10, fontweight="bold")
 
@@ -201,14 +219,16 @@ def draw_sky_map(sky_data, save_path="sky_map.png"):
     ax.spines['polar'].set_color("white")
     ax.grid(color="#333366", linestyle="--", linewidth=0.5)
 
+    # plot planets
     for p in sky_data["planets"]:
         theta = math.radians(p["azimuth_deg"])
         r = 90 - p["altitude_deg"]
-        size = max(30, 200 - (p["magnitude"] * 30))
+        size = max(30, 200 - (p["magnitude"] * 30))  # brighter (lower mag) = bigger dot
         ax.scatter(theta, r, s=size, color="#ffe9a8", edgecolors="white", linewidths=0.5, zorder=5)
         ax.annotate(p["name"], (theta, r), color="white", fontsize=8,
                     xytext=(5, 5), textcoords="offset points")
 
+    # plot the moon
     moon = sky_data["moon"]
     if moon["visible"]:
         theta_m = math.radians(moon["azimuth_deg"])
@@ -224,16 +244,54 @@ def draw_sky_map(sky_data, save_path="sky_map.png"):
     return save_path
 
 
+
 # ---------- VOICE NARRATION ----------
+MYSTIC_VOICE = "en-GB-SoniaNeural"  # smooth, atmospheric British voice
+AMBIENT_PATH = "ambient.wav"
+
+
+async def _synthesize(text, path):
+    communicate = edge_tts.Communicate(
+        text,
+        MYSTIC_VOICE,
+        rate="-15%",   # slower, more deliberate
+        pitch="-8Hz",  # lower, more hushed and mysterious
+    )
+    await communicate.save(path)
+
+
 def speak_story(text):
-    engine = pyttsx3.init()
-    engine.setProperty("rate", 165)
-    engine.say(text)
-    engine.runAndWait()
+    """Plays ambient mystical music while fetching the voice, then swaps
+    to the narration once it's ready. Falls back to basic voice if edge-tts fails."""
+    ambient_playing = False
+    try:
+        if os.path.exists(AMBIENT_PATH):
+            winsound.PlaySound(AMBIENT_PATH, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+            ambient_playing = True
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            temp_path = f.name
+        asyncio.run(_synthesize(text, temp_path))
+
+        if ambient_playing:
+            winsound.PlaySound(None, winsound.SND_PURGE)
+            ambient_playing = False
+
+        playsound(temp_path)
+        os.remove(temp_path)
+    except Exception as e:
+        if ambient_playing:
+            winsound.PlaySound(None, winsound.SND_PURGE)
+        print(Fore.YELLOW + f"[Mystical voice unavailable: {e} — using basic voice instead]")
+        engine = pyttsx3.init()
+        engine.setProperty("rate", 150)
+        engine.say(text)
+        engine.runAndWait()
 
 
 # ---------- LOCATION INPUT ----------
 def get_location_from_user():
+    """Asks for lat/lon, validates it, falls back to Hyderabad on bad input."""
     print(f"\nDefault location: Hyderabad ({DEFAULT_LAT}, {DEFAULT_LON})")
     raw = input("Enter your latitude,longitude (or press Enter for default): ").strip()
 
@@ -244,65 +302,66 @@ def get_location_from_user():
         lat_str, lon_str = raw.split(",")
         lat, lon = float(lat_str.strip()), float(lon_str.strip())
         if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-            print("Those coordinates are out of range - using default location instead.")
+            print("Those coordinates are out of range — using default location instead.")
             return DEFAULT_LAT, DEFAULT_LON
         return str(lat), str(lon)
     except (ValueError, IndexError):
-        print("Couldn't understand that format - using default location instead.")
+        print("Couldn't understand that format — using default location instead.")
         return DEFAULT_LAT, DEFAULT_LON
 
 
 if __name__ == "__main__":
-    print("=" * 50)
-    print("STAR SWITCH - what's in the sky right now")
-    print("=" * 50)
+    print(Fore.CYAN + "=" * 50)
+    print(Fore.CYAN + Style.BRIGHT + "STAR SWITCH — what's in the sky right now")
+    print(Fore.CYAN + "=" * 50)
 
     lat, lon = get_location_from_user()
 
     try:
         sky = get_sky_snapshot(lat=lat, lon=lon)
     except Exception as e:
-        print(f"\nSomething went wrong calculating the sky: {e}")
-        print("Falling back to Hyderabad's coordinates.")
+        print(Fore.RED + f"\nSomething went wrong calculating the sky: {e}")
+        print(Fore.YELLOW + "Falling back to Hyderabad's coordinates.")
         sky = get_sky_snapshot()
 
-    print(f"\nLocation: {sky['location']['lat']}, {sky['location']['lon']}")
-    print(f"Time (UTC): {sky['datetime_utc']}\n")
+    print(Fore.WHITE + f"\nLocation: {sky['location']['lat']}, {sky['location']['lon']}")
+    print(Fore.WHITE + f"Time (UTC): {sky['datetime_utc']}\n")
 
-    print("Visible planets:")
+    print(Fore.YELLOW + Style.BRIGHT + "Visible planets:")
     if sky["planets"]:
         for p in sky["planets"]:
-            print(f"  - {p['name']}: {p['altitude_deg']} deg up, mag {p['magnitude']}")
+            print(Fore.YELLOW + f"  - {p['name']}: {p['altitude_deg']}° up, mag {p['magnitude']}")
     else:
-        print("  None above the horizon right now.")
+        print(Fore.YELLOW + "  None above the horizon right now.")
 
-    print(f"\nMoon: {sky['moon']['phase_name']} "
+    print(Fore.CYAN + f"\nMoon: {sky['moon']['phase_name']} "
           f"({sky['moon']['illumination_pct']}% illuminated), "
           f"in {sky['moon_constellation']}")
 
     map_path = draw_sky_map(sky)
-    print(f"\nSky map saved to: {map_path}")
+    print(Fore.GREEN + f"\nSky map saved to: {map_path}")
 
+    # ---------- THE SWITCH: pick a mythology, switch anytime ----------
     while True:
-        print("\n" + "=" * 50)
-        print("SWITCH YOUR SKY STORY")
+        print(Fore.MAGENTA + "\n" + "=" * 50)
+        print(Fore.MAGENTA + Style.BRIGHT + "SWITCH YOUR SKY STORY")
         for key, name in CULTURES.items():
-            print(f"  {key}) {name}")
-        print("  q) Quit")
-        choice = input("\nPick a culture (1-4) or q to quit: ").strip().lower()
+            print(Fore.MAGENTA + f"  {key}) {name}")
+        print(Fore.MAGENTA + "  q) Quit")
+        choice = input(Fore.WHITE + "\nPick a culture (1-4) or q to quit: ").strip().lower()
 
         if choice == "q":
-            print("Clear skies!")
+            print(Fore.CYAN + "Clear skies!")
             break
 
         culture = CULTURES.get(choice)
         if not culture:
-            print("Not a valid option, try again.")
+            print(Fore.RED + "Not a valid option, try again.")
             continue
 
-        print(f"\n--- Tonight's Story ({culture}) ---\n")
+        print(Fore.GREEN + Style.BRIGHT + f"\n--- Tonight's Story ({culture}) ---\n")
         story = generate_story(sky, culture=culture)
-        print(story)
+        print(Fore.WHITE + story)
 
-        print("\nReading story aloud...")
+        print(Fore.CYAN + "\nSummoning the mystical voice...")
         speak_story(story)
