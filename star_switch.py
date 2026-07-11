@@ -11,10 +11,12 @@ import os
 import requests
 import math
 import matplotlib.pyplot as plt
+import pyttsx3
 
-DEFAULT_LAT = "17.3850"
+# ---------- CONFIG ----------
+DEFAULT_LAT = "17.3850"   # Hyderabad
 DEFAULT_LON = "78.4867"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")  # set this before running
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 PLANETS = {
@@ -28,6 +30,7 @@ PLANETS = {
 }
 
 
+# ---------- SKY ENGINE ----------
 def get_observer(lat=DEFAULT_LAT, lon=DEFAULT_LON, when=None):
     obs = ephem.Observer()
     obs.lat = lat
@@ -103,19 +106,35 @@ def get_sky_snapshot(lat=DEFAULT_LAT, lon=DEFAULT_LON, when=None):
     }
 
 
-def generate_story(sky_data):
+CULTURES = {
+    "1": "Greek",
+    "2": "Hindu/Vedic",
+    "3": "Norse",
+    "4": "Egyptian",
+}
+
+
+# ---------- STORY GENERATOR (Groq / LLaMA) ----------
+def generate_story(sky_data, culture="Greek"):
     if not GROQ_API_KEY:
-        return _fallback_story(sky_data)
+        return _fallback_story(sky_data, culture)
 
     planet_names = [p["name"] for p in sky_data["planets"]]
-    prompt = f"""You are a sky-mythology storyteller. Based on tonight's real sky data, write a short (120-180 word) interactive story or vignette that weaves together mythology from multiple cultures (Greek, Hindu/Vedic, and one other tradition of your choice) tied to what's actually visible.
+    moon = sky_data["moon"]
+    if moon["visible"]:
+        moon_line = f"- Moon phase: {moon['phase_name']} ({moon['illumination_pct']}% illuminated), visible in the constellation: {sky_data['moon_constellation']}"
+    else:
+        moon_line = f"- Moon: currently BELOW the horizon, not visible right now (phase is {moon['phase_name']} if it were up)"
+
+    prompt = f"""You are a sky-mythology storyteller specializing in {culture} mythology. Based on tonight's real sky data, write a short (120-180 word) interactive story or vignette that draws specifically from {culture} mythology and tradition, tied to what's actually visible right now.
 
 Sky data:
 - Visible planets: {', '.join(planet_names) if planet_names else 'none currently above the horizon'}
-- Moon phase: {sky_data['moon']['phase_name']} ({sky_data['moon']['illumination_pct']}% illuminated)
-- Moon is in the constellation: {sky_data['moon_constellation']}
+{moon_line}
 
-Write it as a short second-person narrative ("You look up and see..."), evocative but grounded in the real astronomy. End with one open question inviting the reader to pick what to explore next."""
+Important: only describe objects as visible if they are actually above the horizon per the data above. If the Moon is below the horizon, do not describe seeing it - you can still reference its mythological significance without claiming it's visible.
+
+Write it as a short second-person narrative ("You look up and see..."), evocative but grounded in the real astronomy, drawing only from {culture} mythology and gods/figures. End with one open question inviting the reader to pick what to explore next."""
 
     try:
         resp = requests.post(
@@ -136,10 +155,10 @@ Write it as a short second-person narrative ("You look up and see..."), evocativ
         return resp.json()["choices"][0]["message"]["content"]
     except Exception as e:
         print(f"[Groq call failed: {e} - using fallback story]")
-        return _fallback_story(sky_data)
+        return _fallback_story(sky_data, culture)
 
 
-def _fallback_story(sky_data):
+def _fallback_story(sky_data, culture="Greek"):
     moon = sky_data["moon"]
     const = sky_data["moon_constellation"]
     planet_line = (
@@ -147,13 +166,23 @@ def _fallback_story(sky_data):
         if sky_data["planets"] else
         "No planets keep it company tonight - the sky belongs to the Moon alone."
     )
+    if moon["visible"]:
+        moon_line = (
+            f"[{culture} mode] You look up and find a {moon['phase_name']} hanging in the constellation of {const}, "
+            f"{moon['illumination_pct']}% lit, like a lamp only half-turned toward Earth. "
+        )
+    else:
+        moon_line = (
+            f"[{culture} mode] The Moon has slipped below the horizon for now - "
+            f"it's a {moon['phase_name']} tonight, waiting for its turn to rise. "
+        )
     return (
-        f"You look up and find a {moon['phase_name']} hanging in the constellation of {const}, "
-        f"{moon['illumination_pct']}% lit, like a lamp only half-turned toward Earth. {planet_line} "
-        f"Set GROQ_API_KEY as an environment variable to unlock the full mythology narrator."
+        moon_line + planet_line +
+        " Set GROQ_API_KEY as an environment variable to unlock the full mythology narrator."
     )
 
 
+# ---------- VISUAL SKY MAP ----------
 def draw_sky_map(sky_data, save_path="sky_map.png"):
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111, projection="polar")
@@ -195,12 +224,47 @@ def draw_sky_map(sky_data, save_path="sky_map.png"):
     return save_path
 
 
+# ---------- VOICE NARRATION ----------
+def speak_story(text):
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 165)
+    engine.say(text)
+    engine.runAndWait()
+
+
+# ---------- LOCATION INPUT ----------
+def get_location_from_user():
+    print(f"\nDefault location: Hyderabad ({DEFAULT_LAT}, {DEFAULT_LON})")
+    raw = input("Enter your latitude,longitude (or press Enter for default): ").strip()
+
+    if not raw:
+        return DEFAULT_LAT, DEFAULT_LON
+
+    try:
+        lat_str, lon_str = raw.split(",")
+        lat, lon = float(lat_str.strip()), float(lon_str.strip())
+        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+            print("Those coordinates are out of range - using default location instead.")
+            return DEFAULT_LAT, DEFAULT_LON
+        return str(lat), str(lon)
+    except (ValueError, IndexError):
+        print("Couldn't understand that format - using default location instead.")
+        return DEFAULT_LAT, DEFAULT_LON
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("STAR SWITCH - what's in the sky right now")
     print("=" * 50)
 
-    sky = get_sky_snapshot()
+    lat, lon = get_location_from_user()
+
+    try:
+        sky = get_sky_snapshot(lat=lat, lon=lon)
+    except Exception as e:
+        print(f"\nSomething went wrong calculating the sky: {e}")
+        print("Falling back to Hyderabad's coordinates.")
+        sky = get_sky_snapshot()
 
     print(f"\nLocation: {sky['location']['lat']}, {sky['location']['lon']}")
     print(f"Time (UTC): {sky['datetime_utc']}\n")
@@ -216,8 +280,29 @@ if __name__ == "__main__":
           f"({sky['moon']['illumination_pct']}% illuminated), "
           f"in {sky['moon_constellation']}")
 
-    print("\n--- Tonight's Story ---\n")
-    print(generate_story(sky))
-
     map_path = draw_sky_map(sky)
     print(f"\nSky map saved to: {map_path}")
+
+    while True:
+        print("\n" + "=" * 50)
+        print("SWITCH YOUR SKY STORY")
+        for key, name in CULTURES.items():
+            print(f"  {key}) {name}")
+        print("  q) Quit")
+        choice = input("\nPick a culture (1-4) or q to quit: ").strip().lower()
+
+        if choice == "q":
+            print("Clear skies!")
+            break
+
+        culture = CULTURES.get(choice)
+        if not culture:
+            print("Not a valid option, try again.")
+            continue
+
+        print(f"\n--- Tonight's Story ({culture}) ---\n")
+        story = generate_story(sky, culture=culture)
+        print(story)
+
+        print("\nReading story aloud...")
+        speak_story(story)
