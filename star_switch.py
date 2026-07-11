@@ -9,6 +9,8 @@ import ephem
 import datetime
 import os
 import requests
+import math
+import matplotlib.pyplot as plt
 
 DEFAULT_LAT = "17.3850"
 DEFAULT_LON = "78.4867"
@@ -79,6 +81,7 @@ def moon_info(obs):
         "illumination_pct": round(phase_pct, 1),
         "phase_name": phase_name,
         "altitude_deg": round(float(moon.alt) * 180 / ephem.pi, 1),
+        "azimuth_deg": round(float(moon.az) * 180 / ephem.pi, 1),
         "visible": moon.alt > 0,
     }
 
@@ -151,6 +154,47 @@ def _fallback_story(sky_data):
     )
 
 
+def draw_sky_map(sky_data, save_path="sky_map.png"):
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111, projection="polar")
+
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)
+    ax.set_ylim(0, 90)
+    ax.set_yticks([0, 30, 60, 90])
+    ax.set_yticklabels(["90", "60", "30", "Horizon"], fontsize=7)
+    ax.set_xticks([0, math.pi/2, math.pi, 3*math.pi/2])
+    ax.set_xticklabels(["N", "E", "S", "W"], fontsize=10, fontweight="bold")
+
+    ax.set_facecolor("#0b0e2e")
+    fig.patch.set_facecolor("#0b0e2e")
+    ax.tick_params(colors="white")
+    ax.spines['polar'].set_color("white")
+    ax.grid(color="#333366", linestyle="--", linewidth=0.5)
+
+    for p in sky_data["planets"]:
+        theta = math.radians(p["azimuth_deg"])
+        r = 90 - p["altitude_deg"]
+        size = max(30, 200 - (p["magnitude"] * 30))
+        ax.scatter(theta, r, s=size, color="#ffe9a8", edgecolors="white", linewidths=0.5, zorder=5)
+        ax.annotate(p["name"], (theta, r), color="white", fontsize=8,
+                    xytext=(5, 5), textcoords="offset points")
+
+    moon = sky_data["moon"]
+    if moon["visible"]:
+        theta_m = math.radians(moon["azimuth_deg"])
+        r_m = 90 - moon["altitude_deg"]
+        ax.scatter(theta_m, r_m, s=250, color="#e8e8e8", edgecolors="#aaaaaa", linewidths=1, zorder=6)
+        ax.annotate(f"Moon ({moon['phase_name']})", (theta_m, r_m), color="white", fontsize=8,
+                    xytext=(5, -12), textcoords="offset points")
+
+    ax.set_title("Tonight's Sky", color="white", fontsize=14, pad=20)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150, facecolor=fig.get_facecolor())
+    plt.close()
+    return save_path
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("STAR SWITCH - what's in the sky right now")
@@ -174,3 +218,6 @@ if __name__ == "__main__":
 
     print("\n--- Tonight's Story ---\n")
     print(generate_story(sky))
+
+    map_path = draw_sky_map(sky)
+    print(f"\nSky map saved to: {map_path}")
