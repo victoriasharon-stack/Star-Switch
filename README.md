@@ -1,19 +1,20 @@
 # Star Switch 🌌
 
-**Star Switch** tells you exactly what's in the sky above you right now — real planets, moon phase, and constellations — then turns it into a short mythological story, narrated aloud in an atmospheric voice. Switch between Greek, Hindu/Vedic, Norse, and Egyptian mythology to hear a different story about the *same* real sky.
+**Star Switch** tells you whats exactly happening in the sky right now. It pulls out stories from different ancient mythological cultures that are actually accurate according to the calculations. It gives a sense of taste to someone who wants to enrich themselves culturally. Giving short interactive stories of the stars and the planets in the sky right now, it leaves you with a luring question to learn more.
 
-Built for [Hack Club Horizons Arcana](https://hackclub.com/) 2026.
+this was built for [Hack Club Horizons Arcana](https://hackclub.com/) 2026.
 
 ## What it does
 
-1. **Calculates the real sky** for your location right now — which planets are visible, their altitude and brightness, the Moon's phase and illumination, and which constellation it sits in. Powered by [`ephem`](https://pypi.org/project/ephem/), a real astronomical calculation library — not placeholder data.
-2. **Draws a live sky map** — a radar-style chart showing exactly where each visible object sits relative to North, East, South, West, and the horizon.
-3. **Switches between mythologies** — pick Greek, Hindu/Vedic, Norse, or Egyptian, and an LLM (Groq / Llama 3.3 70B) writes a short story about tonight's actual sky through that culture's lens. Switch again anytime to hear a totally different take on the same sky.
-4. **Narrates it aloud** in an atmospheric, slowed-down voice (via Microsoft Edge's neural TTS), with an original ambient space-drone track playing while the narration is fetched.
+1. **Calculations of the real sky** for the location your are in at this very moment — it tells you which planets are visible, their respective altitude and brightness accordingly, the Moon phases and the illumination or the brightness of it, and which constellation it exactly sits in. This is powered by [`ephem`].
+2. (https://pypi.org/project/ephem/), a real astronomical calculation library — not some medicore placeholder data.
+3. **Draws live sky map** — a radar like chart which shows exactly where each visible object sits adjacent to the North, East, South, West, and the horizon or should I say (horizons) lol.
+4. **Switches between the mythologies** whether you pick Greek, Hindu/Vedic, Norse, or Egyptian, an LLM (Groq / Llama 3.3 70B) writes a little short story about tonight's actual sky through that culture's lens. If you switch again anytime to hear a totally different story on based on a totally different culture.
+5. **Narrates it aloud** in an mystical, atmospheric, slowed-down voice (via Microsoft Edge's neural TTS), with an originally composed ambient space-drone track playing while the narration is fetched live.
 
 ## Why
 
-Most stargazing apps just label what you're looking at. Star Switch treats the night sky as a living story — the same stars meant something different to every culture that looked up at them, and this app lets you hear those different stories about the sky that's actually above you, right now, tonight.
+Most stargazing apps just label something that you are looking at. Star Switch treats this night sky you are gazing at as a living story and also the same stars or planets that you are looking at right now might mean something else to someone else from another culture. So it's always like to really just peep in and see things from somebody else's pov, tonight.
 
 ## Tech stack
 
@@ -44,7 +45,7 @@ Get a free key at [console.groq.com](https://console.groq.com).
 python star_switch.py
 ```
 
-You'll be asked for your location (or press Enter to default to Hyderabad, India), then shown tonight's real sky data and a saved sky map image. Pick a mythology from the menu to hear its story — switch as many times as you like.
+You'll be asked for your location (or press Enter to default to Hyderabad, India- my city and country ofc), then shown tonight's real sky data and a saved sky map image. Pick a mythology from the menu of options given to hear its story and switch back to explore other stories as many times as you's like.
 
 ## Screenshots
 
@@ -57,10 +58,11 @@ You'll be asked for your location (or press Enter to default to Hyderabad, India
 
 ## What's next
 
-- More visible constellations tracked beyond just the Moon's
+- prolly more visible constellations tracked beyond just the Moon's
 - A proper GUI instead of terminal menu
-- Making the "what will you explore next" story prompts actually clickable/interactive
+- Making the "what will you explore next" story prompts actually clickable/interactive further in depth
 
 ---
 
 Built by Victoria Sharon for Horizons Arcana 2026.
+Thanks for stopping by <3
