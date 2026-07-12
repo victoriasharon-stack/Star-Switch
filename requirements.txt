@@ -1,0 +1,5 @@
+streamlit
+ephem
+matplotlib
+requests
+edge-tts
