@@ -49,6 +49,11 @@ You'll be asked for your location (or press Enter to default to Hyderabad, India
 ## Screenshots
 
 *(add a terminal screenshot and a sky_map.png example here)*
+<img width="1050" height="1050" alt="sky_map" src="https://github.com/user-attachments/assets/dab59e13-77a1-4bea-8a99-7bf555a0c02f" />
+<img width="1491" height="778" alt="image" src="https://github.com/user-attachments/assets/41f38315-c05a-47ce-b30b-77b3ddb0c1a6" />
+
+
+
 
 ## What's next
 
