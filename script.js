@@ -1,7 +1,7 @@
 // ---------- CONFIG ----------
 const DEFAULT_LAT = 17.3850;  // Hyderabad
 const DEFAULT_LON = 78.4867;
-const GROQ_API_KEY = "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"; // key
+const GROQ_API_KEY = "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"; // key
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 const PLANETS = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"];
