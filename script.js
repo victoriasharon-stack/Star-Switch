@@ -1,7 +1,7 @@
 // ---------- CONFIG ----------
 const DEFAULT_LAT = 17.3850;  // Hyderabad
 const DEFAULT_LON = 78.4867;
-const GROQ_API_KEY = prompt("Enter your Groq API key:");
+const GROQ_API_KEY = prompt("Enter your Groq API key:"); // asked each visit, never stored in code
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 const PLANETS = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"];
@@ -202,14 +202,34 @@ document.getElementById("useLocationBtn").addEventListener("click", () => {
   );
 });
 
-document.getElementById("setLocationBtn").addEventListener("click", () => {
+document.getElementById("setLocationBtn").addEventListener("click", async () => {
   const val = document.getElementById("manualLocation").value.trim();
   const parts = val.split(",").map(s => parseFloat(s.trim()));
+
   if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) &&
       parts[0] >= -90 && parts[0] <= 90 && parts[1] >= -180 && parts[1] <= 180) {
     loadSky(parts[0], parts[1]);
-  } else {
-    alert("Couldn't understand that format, using default location.");
+    return;
+  }
+
+  if (!val) {
+    loadSky(DEFAULT_LAT, DEFAULT_LON);
+    return;
+  }
+
+  try {
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&limit=1`
+    );
+    const results = await resp.json();
+    if (results.length > 0) {
+      loadSky(parseFloat(results[0].lat), parseFloat(results[0].lon));
+    } else {
+      alert(`Couldn't find "${val}" — using default location instead.`);
+      loadSky(DEFAULT_LAT, DEFAULT_LON);
+    }
+  } catch (e) {
+    alert("Location lookup failed — using default location instead.");
     loadSky(DEFAULT_LAT, DEFAULT_LON);
   }
 });
