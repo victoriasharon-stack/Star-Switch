@@ -1,0 +1,325 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0b0f;
+  color: #eae1d4;
+  font-family: 'Hanken Grotesk', sans-serif;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(1px 1px at 30px 40px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 120px 90px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 220px 150px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 320px 60px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 400px 180px, rgba(255,255,255,0.4), transparent);
+  background-size: 450px 450px;
+  background-repeat: repeat;
+
+}
+
+
+header {
+  padding: 24px 40px;
+}
+
+.label-gold {
+  font-family: 'Space Mono', monospace;
+  color: #f2ca50;
+  font-size: 14px;
+  letter-spacing: 4px;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.25;
+  margin-bottom: 20px;
+  max-width: 700px;
+}
+
+.hero h1 em {
+  color: #f2ca50;
+  font-style: italic;
+}
+
+.subtext {
+  color: #99907c;
+  font-size: 15px;
+  max-width: 500px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.location-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 60px;
+}
+
+.gold-btn {
+  background: #f2ca50;
+  color: #3c2f00;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.gold-btn:hover {
+  background: #ffd868;
+}
+
+#manualLocation {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #99907c;
+  color: #eae1d4;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  padding: 10px 4px;
+  min-width: 200px;
+}
+
+#manualLocation:focus {
+  outline: none;
+  border-bottom-color: #f2ca50;
+}
+
+#setLocationBtn {
+  background: transparent;
+  border: 1px solid #99907c;
+  color: #eae1d4;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+
+}
+
+.section-label {
+  font-family: 'Space Mono', monospace;
+  color: #f2ca50;
+  font-size: 11px;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.sky-section h2, .lens-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+}
+
+.sky-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  margin-bottom: 80px;
+}
+
+.radar-card {
+  background: #16130b;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.card-label {
+  font-family: 'Space Mono', monospace;
+  color: #99907c;
+  font-size: 10px;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+#skyMap {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(242,202,80,0.2);
+  border-radius: 50%;
+  position: relative;
+}
+
+.caption {
+  font-style: italic;
+  color: #666;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: #16130b;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 24px;
+  flex: 1;
+}
+
+.big-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+}
+
+.small-text {
+  color: #f2ca50;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+#planetList {
+  list-style: none;
+}
+
+
+#planetList li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+
+.lens-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 60px;
+}
+
+.lens-card {
+  border-top: 2px solid #444;
+  padding-top: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lens-card:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.lens-card.selected {
+  background: rgba(255,255,255,0.05);
+}
+
+.lens-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+
+.lens-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  font-weight: 400;
+}
+
+.lens-tagline {
+  color: #99907c;
+  font-style: italic;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.lens-link {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.story-box {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 50px 40px;
+  text-align: center;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.placeholder {
+  font-family: 'Playfair Display', serif;
+  color: #99907c;
+  font-size: 1.2rem;
+}
+
+.story-content {
+  text-align: left;
+  width: 100%;
+}
+
+.story-culture-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+
+.story-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+}
+
+
+
+.story-text {
+  font-family: 'Hanken Grotesk', sans-serif;
+  color: #cfc9bd;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+footer {
+  text-align: center;
+  padding: 40px;
+  font-family: 'Space Mono', monospace;
+  color: #666;
+  font-size: 11px;
+  letter-spacing: 2px;
+
+}
+
+@media (max-width: 768px) {
+  .sky-grid, .lens-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+
+  }
+}

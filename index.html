@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Switch</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <p class="label-gold">STAR · SWITCH</p>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Tonight's sky, <em>retold</em> in four ancient tongues.</h1>
+      <p class="subtext">Pull the real planets and moon over your head into a myth. Pick a lens and hear the story of this exact night.</p>
+      <div class="location-controls">
+        <button id="useLocationBtn" class="gold-btn">Use my location</button>
+        <input type="text" id="manualLocation" placeholder="Or enter lat, lng">
+        <button id="setLocationBtn">Set</button>
+      </div>
+    </section>
+
+    <section class="sky-section">
+      <p class="section-label">TONIGHT'S SKY</p>
+      <h2>What is above you, right now.</h2>
+      <div class="sky-grid">
+        <div class="radar-card">
+          <p class="card-label">RADAR MAP</p>
+          <div id="skyMap"></div>
+          <p class="caption">Center = directly overhead. Rim = horizon. North is up.</p>
+        </div>
+        <div class="side-cards">
+          <div class="info-card">
+            <p class="card-label">MOON PHASE</p>
+            <p id="moonPhase" class="big-text">—</p>
+            <p id="moonDetail" class="small-text"></p>
+          </div>
+          <div class="info-card">
+            <p class="card-label">VISIBLE PLANETS</p>
+            <ul id="planetList"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lens-section">
+      <p class="section-label">CHOOSE YOUR LENS</p>
+      <h2>Four mythologies, one sky.</h2>
+      <div class="lens-grid" id="lensGrid">
+        <div class="lens-card" data-culture="Greek">
+          <p class="lens-tag" style="color:#3b82f6">HELLENISTIC</p>
+          <h3>Greek</h3>
+          <p class="lens-tagline">Titans and tragic justice.</p>
+          <p class="lens-link" style="color:#3b82f6">CHOOSE LENS →</p>
+        </div>
+        <div class="lens-card" data-culture="Hindu/Vedic">
+          <p class="lens-tag" style="color:#f97316">VEDIC</p>
+          <h3>Hindu / Vedic</h3>
+          <p class="lens-tagline">Dance of the Nakshatras.</p>
+          <p class="lens-link" style="color:#f97316">CHOOSE LENS →</p>
+        </div>
+        <div class="lens-card" data-culture="Norse">
+          <p class="lens-tag" style="color:#14b8a6">SCANDINAVIAN</p>
+          <h3>Norse</h3>
+          <p class="lens-tagline">Embers of Muspelheim.</p>
+          <p class="lens-link" style="color:#14b8a6">CHOOSE LENS →</p>
+        </div>
+        <div class="lens-card" data-culture="Egyptian">
+          <p class="lens-tag" style="color:#a855f7">KEMETIC</p>
+          <h3>Egyptian</h3>
+          <p class="lens-tagline">Journey to the Duat.</p>
+          <p class="lens-link" style="color:#a855f7">CHOOSE LENS →</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div id="storyBox" class="story-box">
+        <p class="placeholder">Pick a lens above to hear tonight's story.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>STAR SWITCH · WOVEN FROM REAL SKY DATA & ANCIENT TONGUES</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2/astronomy.browser.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
