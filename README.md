@@ -3,7 +3,7 @@ Star Switch
 
 # Visuals
 <img width="1455" height="811" alt="Screenshot 2026-07-21 at 10 28 04 PM" src="https://github.com/user-attachments/assets/a31adebb-74d4-45de-bbad-6cf86be0cc07" />
-<img width="1442" height="785" alt="Screenshot 2026-07-21 at 10 25 07 PM" src="https://github.com/user-attachments/assets/7972e0b1-c4b2-44e8-b46c-cfc771739fe7" />
+<img width="1442" height="785" alt="Screenshot 2026-07-21 at 10 25 07 PM" src="https://github.com/user-attachments/assets/7972e0b1-c4b2-44e8-b46c-cfc771739fe7" /> 
 
 # Demo URL
 you can try it out: https://victoriasharon-stack.github.io/Star-Switch/
