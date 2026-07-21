@@ -1,68 +1,67 @@
-# Star Switch 🌌
+Star Switch
+- it tells you what's exactly happeneing in the sky right now and the mythological stories behind them.
 
-**Star Switch** tells you whats exactly happening in the sky right now. It pulls out stories from different ancient mythological cultures that are actually accurate according to the calculations. It gives a sense of taste to someone who wants to enrich themselves culturally. Giving short interactive stories of the stars and the planets in the sky right now, it leaves you with a luring question to learn more.
+# Visuals
+<img width="1455" height="811" alt="Screenshot 2026-07-21 at 10 28 04 PM" src="https://github.com/user-attachments/assets/a31adebb-74d4-45de-bbad-6cf86be0cc07" />
+<img width="1442" height="785" alt="Screenshot 2026-07-21 at 10 25 07 PM" src="https://github.com/user-attachments/assets/7972e0b1-c4b2-44e8-b46c-cfc771739fe7" />
 
-this was built for [Hack Club Horizons Arcana](https://hackclub.com/) 2026.
+# Demo URL
+you can try it out: https://victoriasharon-stack.github.io/Star-Switch/
+you dont need to install it or sign up, just let it track the geographic location that you are at for accurate stories.
 
-## What it does
+# Quick Start Off
+For the web version (recommended): you can click the link given above as the demo url.
+For Command Line Interface (CLI): if you want to run it locally, type this:
+```bash
+pip install ephem matplotlib requests pyttsx3 edge-tts playsound==1.2.2 colorama
+python star_switch.py
+```
 
-1. **Calculations of the real sky** for the location your are in at this very moment — it tells you which planets are visible, their respective altitude and brightness accordingly, the Moon phases and the illumination or the brightness of it, and which constellation it exactly sits in. This is powered by [`ephem`].
-2. (https://pypi.org/project/ephem/), a real astronomical calculation library — not some medicore placeholder data.
-3. **Draws live sky map** — a radar like chart which shows exactly where each visible object sits adjacent to the North, East, South, West, and the horizon or should I say (horizons) lol.
-4. **Switches between the mythologies** whether you pick Greek, Hindu/Vedic, Norse, or Egyptian, an LLM (Groq / Llama 3.3 70B) writes a little short story about tonight's actual sky through that culture's lens. If you switch again anytime to hear a totally different story on based on a totally different culture.
-5. **Narrates it aloud** in an mystical, atmospheric, slowed-down voice (via Microsoft Edge's neural TTS), with an originally composed ambient space-drone track playing while the narration is fetched live.
+# Features
+1) it tracks a live sky map based off of real calculations.
+2) it tells you a nice and sweet bedtime story lol, and they are real ancient mythologies (so cheers to a history lesson ig)
+3) the stories are narrated out loud at first, the voice might be a bit cranky and as you fidget around or switch cultures you can listen to a better voice which narrates the story.
 
-## Why
 
-Most stargazing apps just label something that you are looking at. Star Switch treats this night sky you are gazing at as a living story and also the same stars or planets that you are looking at right now might mean something else to someone else from another culture. So it's always like to really just peep in and see things from somebody else's pov, tonight.
+# How to run it locally in yo locality 
 
-## Tech stack
+reqs for sure:
+- python 3.10 or a higher version
 
-- **`ephem`** — real astronomical calculations (planet positions, moon phase, constellations)
-- **`matplotlib`** — live polar sky map rendering
-- **Groq API (Llama 3.3 70B)** — mythology-aware story generation
-- **`edge-tts`** — atmospheric neural text-to-speech narration
-- **`winsound`** — background ambient audio during narration fetch
-- **`colorama`** — colored terminal output
-
-## Setup
-
+for installing dependencies:
 ```bash
 pip install ephem matplotlib requests pyttsx3 edge-tts playsound==1.2.2 colorama
 ```
+(link it's been mentioned before, in the quick start off section where you have to run it locally for the CLI ofc)
 
-Set your Groq API key as an environment variable:
+after that you gotta set yo API key (I personally used Groq Api cause it's free)
+search them up using this link: https://console.groq.com/keys
+so it's gonna look something like this (welp-):
 ```bash
-# PowerShell
-$env:GROQ_API_KEY="your_key_here"
+# Windows PowerShell
+$env:GROQ_API_KEY="gsk_your_api_key"
 ```
+but the thing is w/o this the app still runs, but you have a simpler built in story rather than a lame Ai generated one.
 
-Get a free key at [console.groq.com](https://console.groq.com).
 
-## Run it
-
+then you run it:
 ```bash
 python star_switch.py
 ```
 
-You'll be asked for your location (or press Enter to default to Hyderabad, India- my city and country ofc), then shown tonight's real sky data and a saved sky map image. Pick a mythology from the menu of options given to hear its story and switch back to explore other stories as many times as you's like.
+# How does it run?
 
-## Screenshots
-
-*(add a terminal screenshot and a sky_map.png example here)*
-<img width="1050" height="1050" alt="sky_map" src="https://github.com/user-attachments/assets/dab59e13-77a1-4bea-8a99-7bf555a0c02f" />
-<img width="1491" height="778" alt="image" src="https://github.com/user-attachments/assets/41f38315-c05a-47ce-b30b-77b3ddb0c1a6" />
+in my world it just uses star dust & magic but coming to the ground technial talk:
 
 
 
 
-## What's next
 
-- prolly more visible constellations tracked beyond just the Moon's
-- A proper GUI instead of terminal menu
-- Making the "what will you explore next" story prompts actually clickable/interactive further in depth
 
----
 
-Built by Victoria Sharon for Horizons Arcana 2026.
-Thanks for stopping by <3
+
+
+
+
+
+
