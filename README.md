@@ -52,9 +52,17 @@ then you run it:
 python star_switch.py
 ```
 
-# How does it run?
+# How does it work? or challenges i faced. (Credits/Acknowledgements)
 
 in my world it just uses star dust & magic but coming to the ground technial talk:
+but the trickiest part was handling the mythology switching. The first version had a blend of all four cultures but the output was pretty mushy and weird.
+it was a no go welp- it js had generic space-fantasy that didnt actually feel like something og or relatable. 
+so i had to switch to each culture giving it's identity and background in depth. which meant the LLM or the voice module had to be committed to one narrative per story generation instead of hedging across all four. 
+and i feel like the name of this is hence "Star Switch", which again feels personally to me and to the entirety of why it matters to someone like me with an enriched cultural background. This is too emo lol but yeah.
+
+
+If you've come this far, thanks for reading. Hope you like it (i know you did).
+
 
 
 
